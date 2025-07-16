@@ -15,7 +15,6 @@
     "autoevals": "^0.0.130",
     "dotenv": "^17.2.0",
     "evalite": "0.11.4",
-    "linkup-sdk": "^1.1.0",
     "unstorage": "^1.13.1",
     "vitest": "^3.2.4",
     "zod": "^4.0.5"
@@ -23,6 +22,7 @@
   "devDependencies": {
     "@mendable/firecrawl-js": "^1.29.1",
     "brave-search": "^0.9.0",
+    "linkup-sdk": "^1.1.0",
     "@tavily/core": "^0.5.9",
     "exa-js": "^1.8.20"
   }

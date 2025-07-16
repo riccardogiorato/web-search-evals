@@ -3,6 +3,7 @@ import { LinkupClient } from "linkup-sdk";
 import FirecrawlApp from "@mendable/firecrawl-js";
 import Exa from "exa-js";
 import { BraveSearch } from "brave-search";
+import "dotenv/config";
 
 export const firecrawlClient = new FirecrawlApp({
   apiKey: process.env.FIRECRAWL_API_KEY ?? "",

@@ -23,9 +23,6 @@ importers:
       evalite:
         specifier: 0.11.4
         version: 0.11.4
-      linkup-sdk:
-        specifier: ^1.1.0
-        version: 1.1.0(@types/node@18.19.119)(typescript@5.8.3)
       unstorage:
         specifier: ^1.13.1
         version: 1.16.1
@@ -48,6 +45,9 @@ importers:
       exa-js:
         specifier: ^1.8.20
         version: 1.8.20(ws@8.18.3)
+      linkup-sdk:
+        specifier: ^1.1.0
+        version: 1.1.0(@types/node@18.19.119)(typescript@5.8.3)
 
 packages:
 
