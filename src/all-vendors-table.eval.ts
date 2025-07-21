@@ -5,14 +5,12 @@ import {
   braveSearch,
   linkupSearch,
 } from "./lib/searchClients";
-import {
-  recencyTest,
-  diversityTest,
-  spamAvoidanceTest,
-  entityDisambiguationTest,
-  brandHomepageTest,
-  latencyTest,
-} from "./tests/sharedTestTypes";
+import { brandHomepageTest } from "./tests/brandHomepage";
+import { diversityTest } from "./tests/diversity";
+import { entityDisambiguationTest } from "./tests/entityDisambiguation";
+import { latencyTest } from "./tests/latency";
+import { recencyTest } from "./tests/recency";
+import { spamAvoidanceTest } from "./tests/spamAvoidance";
 
 const vendors = [
   { name: "firecrawl", search: firecrawlSearch },
