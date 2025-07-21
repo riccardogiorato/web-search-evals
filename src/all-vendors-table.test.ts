@@ -4,6 +4,10 @@ import {
   exaSearch,
   braveSearch,
   linkupSearch,
+  firecrawlSearchImpl,
+  exaSearchImpl,
+  braveSearchImpl,
+  linkupSearchImpl,
 } from "./lib/searchClients";
 import { brandHomepageTest } from "./tests/brandHomepage";
 import { diversityTest } from "./tests/diversity";
@@ -11,6 +15,10 @@ import { entityDisambiguationTest } from "./tests/entityDisambiguation";
 import { latencyTest } from "./tests/latency";
 import { recencyTest } from "./tests/recency";
 import { spamAvoidanceTest } from "./tests/spamAvoidance";
+import { factualityTest } from "./tests/factuality";
+import { citationQualityTest } from "./tests/citationQuality";
+import { intentUnderstandingTest } from "./tests/intentUnderstanding";
+import { linkQualityTest } from "./tests/linkQuality";
 
 const vendors = [
   { name: "firecrawl", search: firecrawlSearch },
@@ -51,8 +59,39 @@ const tests = [
     isLatency: false,
   },
   {
+    name: "Factuality/Accuracy",
+    factory: factualityTest,
+    needsExpected: true,
+    isLatency: false,
+  },
+  {
+    name: "Citation Quality",
+    factory: citationQualityTest,
+    needsExpected: true,
+    isLatency: false,
+  },
+  {
+    name: "Query Intent Understanding",
+    factory: intentUnderstandingTest,
+    needsExpected: true,
+    isLatency: false,
+  },
+  {
+    name: "Link Quality",
+    factory: linkQualityTest,
+    needsExpected: false,
+    isLatency: false,
+  },
+  {
     name: "Latency (s)",
-    factory: latencyTest,
+    factory: (vendor) => {
+      // Use the non-cached implementation for latency
+      if (vendor === firecrawlSearch) return latencyTest(firecrawlSearchImpl);
+      if (vendor === exaSearch) return latencyTest(exaSearchImpl);
+      if (vendor === braveSearch) return latencyTest(braveSearchImpl);
+      if (vendor === linkupSearch) return latencyTest(linkupSearchImpl);
+      return latencyTest(vendor);
+    },
     needsExpected: false,
     isLatency: true,
   },
@@ -121,14 +160,39 @@ vendors.forEach((vendor) => {
 });
 
 afterAll(() => {
-  // Print table with Vendor as first column
-  const table = Object.values(results).map((row) => {
-    const out: Record<string, string> = { Vendor: row.Vendor as string };
-    for (const test of tests) {
-      out[test.name] = row[test.name] as string;
+  // Print table with Test as first column, then vendors as columns
+  const testNames = tests.map((t) => t.name);
+  const vendorNames = vendors.map((v) => v.name);
+  const table = testNames.map((testName) => {
+    const row: Record<string, string> = { Test: testName };
+    for (const vendor of vendorNames) {
+      row[vendor] = results[vendor]?.[testName] ?? "-";
     }
-    return out;
+    return row;
   });
+
+  // Add overall row (average percentage per vendor, excluding non-percentage tests)
+  const percentageTestNames = tests
+    .filter((t) => !t.isLatency)
+    .map((t) => t.name);
+  const overallRow: Record<string, string> = { Test: "Overall" };
+  for (const vendor of vendorNames) {
+    let sum = 0;
+    let count = 0;
+    for (const testName of percentageTestNames) {
+      const value = results[vendor]?.[testName];
+      if (typeof value === "string" && value.endsWith("%")) {
+        const num = parseFloat(value.replace("%", ""));
+        if (!isNaN(num)) {
+          sum += num;
+          count++;
+        }
+      }
+    }
+    overallRow[vendor] = count > 0 ? `${Math.round(sum / count)}%` : "-";
+  }
+  table.push(overallRow);
+
   // eslint-disable-next-line no-console
   console.table(table);
 });
