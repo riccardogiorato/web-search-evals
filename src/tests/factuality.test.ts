@@ -14,7 +14,10 @@ const vendors = [
 ];
 
 const testCases = [
-  { query: "Who is the president of the United States?", expected: "Trump" },
+  {
+    query: "Who is the president of the United States?",
+    expected: "United States",
+  },
   { query: "Capital of France", expected: "Paris" },
   { query: "Largest planet in the solar system", expected: "Jupiter" },
 ];

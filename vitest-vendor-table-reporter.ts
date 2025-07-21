@@ -105,33 +105,94 @@ export default class VendorTableReporter implements Reporter {
       }
       table.push(row);
     }
-    // Add overall row (average of non-latency testType percentages)
+    // Add overall row (global pass rate: total passed / total tests, excluding latency)
     const overall: Record<string, string> = { Test: "Overall" };
     for (const vendor of vendors) {
-      let sum = 0,
-        count = 0;
+      let totalPassed = 0,
+        totalTests = 0;
       for (const testType of testTypes) {
         if (testType.toLowerCase().includes("latency")) continue;
         const tests = testData.filter(
           (t) => t.vendor === vendor && t.testType === testType
         );
         if (tests.length === 0) continue;
-        if (tests.length === 1) {
-          const state = tests[0].result?.state;
-          sum += state === "pass" ? 100 : 0;
-          count++;
-        } else {
-          const passed = tests.filter((t) => t.result?.state === "pass").length;
-          sum += (passed / tests.length) * 100;
-          count++;
-        }
+        totalPassed += tests.filter((t) => t.result?.state === "pass").length;
+        totalTests += tests.length;
       }
-      overall[vendor] = count ? `${Math.round(sum / count)}%` : "-";
+      overall[vendor] = totalTests
+        ? `${Math.round(
+            (totalPassed / totalTests) * 100
+          )}% (${totalPassed}/${totalTests})`
+        : "-";
     }
     table.push(overall);
-    // Print table without index column
+    // Print table without index column, with color
     const columns = ["Test", ...vendors];
-    // eslint-disable-next-line no-console
-    console.table(table, columns);
+    const RED = "\x1b[31m";
+    const GREEN = "\x1b[32m";
+    const RESET = "\x1b[0m";
+    // Colorize table cells
+    function colorize(val: string) {
+      if (val === "✓" || val === "100%") return GREEN + val + RESET;
+      if (
+        val === "✗" ||
+        (/^\d+\/\d+ \(\d+%\)$/.test(val) && !val.includes("100%"))
+      )
+        return RED + val + RESET;
+      if (/^\d+%$/.test(val)) {
+        const num = parseInt(val);
+        if (num === 100) return GREEN + val + RESET;
+        if (num < 100) return RED + val + RESET;
+      }
+      if (/\(\d+%\)/.test(val)) {
+        const percent = parseInt(val.match(/\((\d+)%\)/)?.[1] || "0");
+        if (percent === 100) return GREEN + val + RESET;
+        if (percent < 100) return RED + val + RESET;
+      }
+      if (val === "✗") return RED + val + RESET;
+      return val;
+    }
+    const coloredTable = table.map((row) => {
+      const coloredRow: Record<string, string> = {};
+      for (const col of columns) {
+        coloredRow[col] = colorize(row[col] ?? "");
+      }
+      return coloredRow;
+    });
+    // Custom table printer for color support and alignment
+    function stripAnsi(str: string) {
+      return str.replace(/\x1B\[[0-9;]*m/g, "");
+    }
+    function printColorTable(
+      table: Array<Record<string, string>>,
+      columns: string[]
+    ) {
+      // Calculate max width for each column (excluding ANSI codes)
+      const colWidths = columns.map((col) => {
+        return Math.max(
+          stripAnsi(col).length,
+          ...table.map((row) => stripAnsi(row[col] ?? "").length)
+        );
+      });
+      // Print header
+      const header = columns
+        .map((col, i) => col.padEnd(colWidths[i]))
+        .join("  ");
+      console.log(header);
+      // Print separator
+      console.log(colWidths.map((w) => "-".repeat(w)).join("  "));
+      // Print rows
+      for (const row of table) {
+        const line = columns
+          .map((col, i) => {
+            const val = row[col] ?? "";
+            const padLen = colWidths[i] + (val.length - stripAnsi(val).length); // account for color code length
+            return val.padEnd(padLen);
+          })
+          .join("  ");
+        console.log(line);
+      }
+    }
+    printColorTable(coloredTable, columns);
   }
 }
