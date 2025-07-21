@@ -35,6 +35,7 @@ export default class VendorTableReporter implements Reporter {
               testName: task.name,
               id: task.id,
             });
+            console.log("[onCollected] Collected test:", task.id, task.name);
           }
         }
       }
@@ -44,9 +45,32 @@ export default class VendorTableReporter implements Reporter {
     }
   }
 
-  onTaskUpdate(task: any) {
-    if (task.type === "test" && this.allTests.has(task.id)) {
-      this.allTests.get(task.id)!.result = task.result;
+  onTaskUpdate(taskOrBatch: any) {
+    // Handle batch updates (array of [id, result, ...])
+    if (Array.isArray(taskOrBatch)) {
+      for (const [id, result] of taskOrBatch) {
+        const meta = this.allTests.get(id);
+        if (meta) {
+          meta.result = result;
+          console.log("[DEBUG BATCH RESULT]", id, meta.testName, result?.state);
+        } else {
+          console.log("[DEBUG BATCH RESULT] Unknown id:", id, result?.state);
+        }
+      }
+      return;
+    }
+    // Handle single task object
+    const task = taskOrBatch;
+    if (task.type === "test") {
+      console.log(
+        "[DEBUG TEST RESULT]",
+        task.id,
+        task.name,
+        task.result?.state
+      );
+      if (this.allTests.has(task.id)) {
+        this.allTests.get(task.id)!.result = task.result;
+      }
     }
   }
 
