@@ -7,14 +7,14 @@
     "./dist/*"
   ],
   "scripts": {
-    "dev": "evalite watch"
+    "test": "vitest run src",
+    "dev": "vitest watch src"
   },
   "dependencies": {
     "@ai-sdk/togetherai": "0.2.16",
     "ai": "^4.3.19",
     "autoevals": "^0.0.130",
     "dotenv": "^17.2.0",
-    "evalite": "0.11.4",
     "unstorage": "^1.13.1",
     "vitest": "^3.2.4",
     "zod": "^4.0.5"

@@ -85,3 +85,10 @@ export const firecrawlSearch = withCache("firecrawl", firecrawlSearchImpl);
 export const exaSearch = withCache("exa", exaSearchImpl);
 export const braveSearch = withCache("brave", braveSearchImpl);
 export const linkupSearch = withCache("linkup", linkupSearchImpl);
+
+export {
+  firecrawlSearchImpl,
+  exaSearchImpl,
+  braveSearchImpl,
+  linkupSearchImpl,
+};
