@@ -38,7 +38,8 @@ const firecrawlSearchImpl: SearchFunction = async (query, numResults = 5) => {
   const response = await firecrawlClient.search(query, { limit: numResults });
   if (!response?.data || !Array.isArray(response.data)) return [];
   return response.data.map((item) => ({
-    title: item.metadata?.title || "",
+    // Fix for title extraction - check both direct title and metadata.title
+    title: item.title || item.metadata?.title || "",
     url: item.url || "",
   }));
 };
